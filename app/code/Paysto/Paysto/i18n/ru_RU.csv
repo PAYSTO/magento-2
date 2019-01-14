@@ -1,0 +1,27 @@
+"No such order id.","Заказ не найден."
+"Your purchase process has been cancelled.","Ваш платеж отменен."
+"Something went wrong while processing your order. Please try again later.","В процессе оплаты произошла ошибка. Попробуйте пожалуйста еще раз."
+"Gateway response is not valid.","Некорректный ответ процессинга."
+"Wrong response type","Неправельный ответ"
+"Order payment #%1","Оплата заказа №%1"
+"Amount doesn't match.","Сумма заказа не совпадает."
+"Not supported response.","Ответ не поддержывается."
+"Order is not found.","Заказ не найден."
+"You will be redirected to the Paysto website.","Вы будете перенаправлены на платежный шлюз Paysto."
+"Continue to Pay","Продолжить оплату"
+Paysto,Paysto
+Enabled,Разрешен
+Title,Заголовок
+"Merchant store ID","Id Магазина"
+"MD5 Secret for Transactions","Секретный ключ"
+Debug,Режим отладки
+"Payment From Applicable Countries","Платеж из разрешенных стран"
+"Payment From Specific Countries","Платеж из выбранных стран"
+"Sort Order","Порядок сортировки"
+"Payment was canceled.","Платеж был отменен."
+"Your payment has been successfully processed by our shop system.","Ваш платеж был успешно обработан."
+"Wrong request type.","Ошибочный запрос."
+"IP can't be validated as paysto.","IP не соответствует Paysto."
+"Request doesn't contain required fields.","В запросе отсуствуют необходимые поля."
+"Transaction password is wrong.","Ответный хэш неверен."
+"Return post error.","Ошибочный возвратный запрос."

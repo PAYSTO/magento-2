@@ -1,7 +1,7 @@
 # magento-2
 
 Модуль оплаты через платежный сервис Paysto (http://www.paysto.com)
-для Magento 2.3+
+для Magento 2.3
 
 # Установка модуля
 

@@ -1,0 +1,144 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Paysto, Inc. All rights reserved.
+ *
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <preference for="Paysto\Paysto\Api\GuestPaymentInformationManagementProxyInterface"
+                type="Paysto\Paysto\Model\GuestPaymentInformationManagementProxy" />
+    <type name="Magento\Framework\Url\SecurityInfo">
+        <arguments>
+            <argument name="secureUrlList" xsi:type="array">
+                <item name="paysto" xsi:type="string">/paysto/</item>
+            </argument>
+        </arguments>
+    </type>
+    <type name="Magento\Config\Model\Config\TypePool">
+        <arguments>
+            <argument name="sensitive" xsi:type="array">
+                <item name="payment/paysto/merchant_id" xsi:type="string">1</item>
+                <item name="payment/paysto/md5_secret" xsi:type="string">1</item>
+            </argument>
+        </arguments>
+    </type>
+    <type name="Paysto\Paysto\Gateway\Request\HtmlRedirect\OrderDataBuilder">
+        <arguments>
+            <argument name="config" xsi:type="object">PaystoConfig</argument>
+        </arguments>
+    </type>
+    <type name="Paysto\Paysto\Gateway\Command\Form\BuildCommand">
+        <arguments>
+            <argument name="logger" xsi:type="object">PaystoLogger</argument>
+        </arguments>
+    </type>
+    <type name="Paysto\Paysto\Gateway\Command\ResponseCommand">
+        <arguments>
+            <argument name="commandPool" xsi:type="object">PaystoCommandPool</argument>
+            <argument name="validator" xsi:type="object">PaystoValidator</argument>
+            <argument name="logger" xsi:type="object">PaystoLogger</argument>
+        </arguments>
+    </type>
+    <type name="Paysto\Paysto\Gateway\Validator\ResponseValidator">
+        <arguments>
+            <argument name="config" xsi:type="object">PaystoConfig</argument>
+        </arguments>
+    </type>
+    <type name="Paysto\Paysto\Gateway\Http\TransferFactory">
+        <arguments>
+            <argument name="config" xsi:type="object">PaystoConfig</argument>
+        </arguments>
+    </type>
+    <type name="Paysto\Paysto\Gateway\Command\Response\AcceptCommand">
+        <arguments>
+            <argument name="validator" xsi:type="object">Paysto\Paysto\Gateway\Validator\AcceptValidator</argument>
+            <argument name="handler" xsi:type="object">PaystoAcceptHandler</argument>
+        </arguments>
+    </type>
+    <type name="Paysto\Paysto\Block\Info">
+        <arguments>
+            <argument name="config" xsi:type="object">PaystoConfig</argument>
+        </arguments>
+    </type>
+    <type name="Paysto\Paysto\Controller\Result\Response">
+        <arguments>
+            <argument name="command" xsi:type="object">Paysto\Paysto\Gateway\Command\ResponseCommand</argument>
+            <argument name="logger" xsi:type="object">PaystoLogger</argument>
+        </arguments>
+    </type>
+    <virtualType name="PaystoFacade" type="Magento\Payment\Model\Method\Adapter">
+        <arguments>
+            <argument name="code" xsi:type="string">paysto</argument>
+            <argument name="formBlockType" xsi:type="string">Magento\Payment\Block\Transparent\Info</argument>
+            <argument name="infoBlockType" xsi:type="string">Paysto\Paysto\Block\Info</argument>
+            <argument name="valueHandlerPool" xsi:type="object">PaystoValueHandlerPool</argument>
+            <argument  name="validatorPool" xsi:type="object">PaystoValidatorPool</argument>
+            <argument name="commandPool" xsi:type="object">PaystoCommandPool</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="PaystoCommandPool" type="Magento\Payment\Gateway\Command\CommandPool">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="initialize" xsi:type="string">Paysto\Paysto\Gateway\Command\InitializeCommand</item>
+                <item name="accept_command" xsi:type="string">Paysto\Paysto\Gateway\Command\Response\AcceptCommand</item>
+                <item name="cancel_command" xsi:type="string">Paysto\Paysto\Gateway\Command\Response\CancelCommand</item>
+                <item name="capture" xsi:type="string">Paysto\Paysto\Gateway\Command\CaptureCommand</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="PaystoConfig" type="Magento\Payment\Gateway\Config\Config">
+        <arguments>
+            <argument name="methodCode" xsi:type="string">paysto</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="PaystoDefaultValueHandler" type="Magento\Payment\Gateway\Config\ConfigValueHandler">
+        <arguments>
+            <argument name="configInterface" xsi:type="object">PaystoConfig</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="PaystoValueHandlerPool" type="Magento\Payment\Gateway\Config\ValueHandlerPool">
+        <arguments>
+            <argument name="handlers" xsi:type="array">
+                <item name="default" xsi:type="string">PaystoDefaultValueHandler</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="PaystoCountryValidator" type="Magento\Payment\Gateway\Validator\CountryValidator">
+        <arguments>
+            <argument name="config" xsi:type="object">PaystoConfig</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="PaystoValidatorPool" type="Magento\Payment\Gateway\Validator\ValidatorPool">
+        <arguments>
+            <argument name="validators" xsi:type="array">
+                <item name="country" xsi:type="string">PaystoCountryValidator</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="PaystoValidator" type="Magento\Payment\Gateway\Validator\ValidatorComposite">
+        <arguments>
+            <argument name="validators" xsi:type="array">
+                <item name="response" xsi:type="string">Paysto\Paysto\Gateway\Validator\ResponseValidator</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="PaystoLogger" type="Magento\Payment\Model\Method\Logger">
+        <arguments>
+            <argument name="config" xsi:type="object">PaystoConfig</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="PaystoHttpClient" type="Magento\Payment\Gateway\Http\Client\Zend">
+        <arguments>
+            <argument name="logger" xsi:type="object">PaystoLogger</argument>
+            <argument name="converter" xsi:type="object">Paysto\Paysto\Gateway\Http\Converter\StringToMap</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="PaystoAcceptHandler" type="Magento\Payment\Gateway\Response\HandlerChain">
+        <arguments>
+            <argument name="handlers" xsi:type="array">
+                <item name="details" xsi:type="string">Paysto\Paysto\Gateway\Response\PaymentDetailsHandler</item>
+            </argument>
+        </arguments>
+    </virtualType>
+</config>

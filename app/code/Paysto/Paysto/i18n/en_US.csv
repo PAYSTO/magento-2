@@ -1,0 +1,27 @@
+"No such order id.","No such order id."
+"Your purchase process has been cancelled.","Your purchase process has been cancelled."
+"Something went wrong while processing your order. Please try again later.","Something went wrong while processing your order. Please try again later."
+"Gateway response is not valid.","Gateway response is not valid."
+"Wrong response type","Wrong response type"
+"Order payment #%1","Order payment #%1"
+"Amount doesn't match.","Amount doesn't match."
+"Not supported response.","Not supported response."
+"Order is not found.","Order is not found."
+"You will be redirected to the Paysto website.","You will be redirected to the Paysto website."
+"Continue to Pay","Continue to Pay"
+Paysto,Paysto
+Enabled,Enabled
+Title,Title
+"Merchant store ID","Merchant store ID"
+"MD5 Secret for Transactions","MD5 Secret for Transactions"
+Debug,Debug
+"Payment From Applicable Countries","Payment From Applicable Countries"
+"Payment From Specific Countries","Payment From Specific Countries"
+"Sort Order","Sort Order"
+"Payment was canceled.","Payment was canceled."
+"Your payment has been successfully processed by our shop system.","Your payment has been successfully processed by our shop system."
+"Wrong request type.","Wrong request type."
+"IP can't be validated as paysto.","IP can't be validated as paysto."
+"Request doesn't contain required fields.","Request doesn't contain required fields."
+"Transaction password is wrong.","Transaction password is wrong."
+"Return post error.","Return post error."

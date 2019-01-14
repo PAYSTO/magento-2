@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Paysto, Inc. All rights reserved.
+ *
+ */
+-->
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Paysto_Webapi:etc/webapi.xsd">
+
+    <!-- Guest place order proxy. for custom cart/checkout/customer data invalidation -->
+    <route url="/V1/paysto-guest-carts/:cartId/payment-information" method="POST">
+        <service class="Paysto\Paysto\Api\GuestPaymentInformationManagementProxyInterface" method="savePaymentInformationAndPlaceOrder"/>
+        <resources>
+            <resource ref="anonymous" />
+        </resources>
+    </route>
+</routes>
