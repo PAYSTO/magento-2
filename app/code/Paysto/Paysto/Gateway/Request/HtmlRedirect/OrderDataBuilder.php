@@ -101,7 +101,8 @@ class OrderDataBuilder implements BuilderInterface
             $product = [
                 substr($item->getSku(),0,31),
                 substr($name,0,31),
-                $name,
+//                $name,
+                '',
                 $qty,
                 number_format($item->getPriceInclTax() - $item->getDiscountAmount()/$qty,2,'.',''),
                 $item->getTaxPercent() > 0 ? 1 : 0
