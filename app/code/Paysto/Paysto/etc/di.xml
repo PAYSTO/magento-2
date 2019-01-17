@@ -65,6 +65,7 @@
         <arguments>
             <argument name="command" xsi:type="object">Paysto\Paysto\Gateway\Command\ResponseCommand</argument>
             <argument name="logger" xsi:type="object">PaystoLogger</argument>
+            <argument name="config" xsi:type="object">PaystoConfig</argument>
         </arguments>
     </type>
     <virtualType name="PaystoFacade" type="Magento\Payment\Model\Method\Adapter">
