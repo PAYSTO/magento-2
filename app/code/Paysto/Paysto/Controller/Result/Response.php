@@ -21,6 +21,8 @@ use Magento\Framework\App\Action\Action;
 use Magento\Sales\Model\OrderFactory;
 use Magento\Sales\Model\Order;
 use Magento\Checkout\Model\Session;
+use Magento\Framework\HTTP\PhpEnvironment\RemoteAddress;
+use Magento\Payment\Gateway\ConfigInterface;
 
 /**
  * Process response
@@ -84,6 +86,16 @@ class Response extends Action implements CsrfAwareActionInterface
     private $loggerException;
 
     /**
+     * @var ConfigInterface
+     */
+    private $config;
+
+    /**
+     * @var RemoteAddress
+     */
+    private $remoteAddress;
+
+    /**
      * Response constructor.
      * @param Context $context
      * @param ResponseCommand $command
@@ -91,6 +103,8 @@ class Response extends Action implements CsrfAwareActionInterface
      * @param LoggerInterface $loggerException
      * @param Session $checkoutSession
      * @param OrderFactory $order
+     * @param RemoteAddress $remoteAddress
+     * @param ConfigInterface $config
      */
     public function __construct(
         Context $context,
@@ -98,7 +112,9 @@ class Response extends Action implements CsrfAwareActionInterface
         Logger $logger,
         LoggerInterface $loggerException,
         Session $checkoutSession,
-        OrderFactory $order
+        OrderFactory $order,
+        RemoteAddress $remoteAddress,
+        ConfigInterface $config
     ) {
         parent::__construct($context);
 
@@ -107,6 +123,8 @@ class Response extends Action implements CsrfAwareActionInterface
         $this->loggerException = $loggerException;
         $this->checkoutSession = $checkoutSession;
         $this->order = $order;
+        $this->config = $config;
+        $this->remoteAddress = $remoteAddress;
     }
 
     /**
@@ -143,6 +161,8 @@ class Response extends Action implements CsrfAwareActionInterface
                 }
                 // редиректим покупателя
                 return $this->resultRedirect($status);
+            } elseif (!$this->isPaystoServerIP()){
+                return $this->resultRedirect(self::$failureRedirectType);
             }
         }
 
@@ -184,12 +204,28 @@ class Response extends Action implements CsrfAwareActionInterface
                 $this->checkoutSession->restoreQuote();
                 break;
             case self::$failureRedirectType:
+                $this->messageManager->addSuccessMessage(__('Your purchase process has been cancelled.'));
+                $this->checkoutSession->setLastRealOrderId($this->getRequest()->getParam('x_invoice_num'));
+                $this->checkoutSession->restoreQuote();
+                break;
             default:
                 $this->messageManager
                     ->addErrorMessage(__('Something went wrong while processing your order. Please try again later.'));
         }
 
         return $resultRedirect->setPath($redirectUrl);
+    }
+
+    /**
+     * Check remote IP Paysto
+     *
+     * @return bool
+     */
+    public function isPaystoServerIP()
+    {
+        $ips = explode(',', $this->config->getValue('paysto_server_ip'));
+        if (count($ips) < 2) return true;
+        return in_array((string)$this->remoteAddress->getRemoteAddress(), $ips);
     }
 
     /**
