@@ -18,6 +18,10 @@ use Magento\Framework\App\CsrfAwareActionInterface;
 use Magento\Framework\App\Request\InvalidRequestException;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\App\Action\Action;
+use Magento\Sales\Model\OrderFactory;
+use Magento\Sales\Model\Order;
+use Magento\Checkout\Model\Session;
+
 /**
  * Process response
  *
@@ -25,6 +29,45 @@ use Magento\Framework\App\Action\Action;
  */
 class Response extends Action implements CsrfAwareActionInterface
 {
+    /**
+     * Redirect types.
+     *
+     * @var string
+     */
+    private static $cancelRedirectType = 'cancel';
+
+    /**
+     * @var string
+     */
+    private static $failureRedirectType = 'failure';
+
+    /**
+     * @var string
+     */
+    private static $successRedirectType = 'success';
+
+    /**
+     * Relative urls for different redirect types.
+     *
+     * @var string
+     */
+    private static $defaultRedirectUrl = 'checkout/cart';
+
+    /**
+     * @var string
+     */
+    private static $successRedirectUrl = 'checkout/onepage/success';
+
+    /**
+     * @var Session
+     */
+    private $checkoutSession;
+
+    /**
+     * @var OrderFactory
+     */
+    private $order;
+
     /**
      * @var ResponseCommand
      */
@@ -46,18 +89,24 @@ class Response extends Action implements CsrfAwareActionInterface
      * @param ResponseCommand $command
      * @param Logger $logger
      * @param LoggerInterface $loggerException
+     * @param Session $checkoutSession
+     * @param OrderFactory $order
      */
     public function __construct(
         Context $context,
         ResponseCommand $command,
         Logger $logger,
-        LoggerInterface $loggerException
+        LoggerInterface $loggerException,
+        Session $checkoutSession,
+        OrderFactory $order
     ) {
         parent::__construct($context);
 
         $this->command = $command;
         $this->logger = $logger;
         $this->loggerException = $loggerException;
+        $this->checkoutSession = $checkoutSession;
+        $this->order = $order;
     }
 
     /**
@@ -67,10 +116,37 @@ class Response extends Action implements CsrfAwareActionInterface
     {
         $params = $this->getRequest()->getParams();
 
-        $this->loggerException->debug('Response');
-
         $this->logger->debug($params);
 
+        // проверяем пост и поля
+        if ($this->getRequest()->isPost()
+            && !empty($this->getRequest()->getParam('x_invoice_num'))
+        ){
+            $order = $this->order->create()->loadByIncrementId($this->getRequest()->getParam('x_invoice_num'));
+            // заказ найден и статус соответствует
+            if ($order->getId()
+                && in_array($order->getState(), [
+                    Order::STATE_CANCELED,
+                    Order::STATE_PROCESSING
+                ])
+            ){
+                switch ($order->getState()){
+                    case Order::STATE_CANCELED:
+                        $status = self::$cancelRedirectType;
+                        break;
+                    case Order::STATE_PROCESSING:
+                        $status = self::$successRedirectType;
+                        break;
+                    default:
+                        $status = self::$successRedirectType;
+                        break;
+                }
+                // редиректим покупателя
+                return $this->resultRedirect($status);
+            }
+        }
+
+        // обрабатываем заказ
         $response = $this->resultFactory->create(ResultFactory::TYPE_RAW);
         $response->setHeader('Content-type', 'text/plain');
         $response->setContents(json_encode(['success' => true]));
@@ -83,6 +159,37 @@ class Response extends Action implements CsrfAwareActionInterface
             return $response;
         }
         return $response;
+    }
+
+    /**
+     * Redirect by type
+     *
+     * @param $redirectType
+     * @return \Magento\Backend\Model\View\Result\Redirect
+     */
+    public function resultRedirect($redirectType)
+    {
+        /** @var \Magento\Backend\Model\View\Result\Redirect $resultRedirect */
+        $resultRedirect = $this->resultRedirectFactory->create();
+
+        $redirectUrl = self::$defaultRedirectUrl;
+
+        switch ($redirectType) {
+            case self::$successRedirectType:
+                $redirectUrl = self::$successRedirectUrl;
+                break;
+            case self::$cancelRedirectType:
+                $this->messageManager->addSuccessMessage(__('Your purchase process has been cancelled.'));
+                $this->checkoutSession->setLastRealOrderId($this->getRequest()->getParam('x_invoice_num'));
+                $this->checkoutSession->restoreQuote();
+                break;
+            case self::$failureRedirectType:
+            default:
+                $this->messageManager
+                    ->addErrorMessage(__('Something went wrong while processing your order. Please try again later.'));
+        }
+
+        return $resultRedirect->setPath($redirectUrl);
     }
 
     /**
